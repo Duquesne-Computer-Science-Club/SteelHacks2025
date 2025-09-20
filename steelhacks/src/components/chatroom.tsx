@@ -9,6 +9,20 @@ interface Message {
 
 const ROOMS = ['Room 100', 'Room 101', 'Room 102'];
 
+function getSessionIdFromCookie(): string | null {
+    const match = document.cookie.match(/(?:^|;\s*)sessionId=([^;]*)/);
+    return match ? decodeURIComponent(match[1]) : null;
+}
+
+function getUsernameFromSession(): string {
+    // For demo: get username from localStorage using sessionId
+    const sessionId = getSessionIdFromCookie();
+    if (!sessionId) return "Unknown";
+    // If you store username by sessionId, adjust this logic
+    const username = localStorage.getItem("username");
+    return username || "Unknown";
+}
+
 const ChatRoom: React.FC = () => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [input, setInput] = useState('');
@@ -16,6 +30,11 @@ const ChatRoom: React.FC = () => {
     const [isConnected, setIsConnected] = useState(false);
     const [room, setRoom] = useState<string>('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
+
+    // Get username from session on mount
+    useEffect(() => {
+        setUsername(getUsernameFromSession());
+    }, []);
 
     // Poll messages from server every 2 seconds
     useEffect(() => {
@@ -63,16 +82,12 @@ const ChatRoom: React.FC = () => {
         if (e.key === 'Enter') sendMessage();
     };
 
-    const handleUsernameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setUsername(e.target.value);
-    };
-
     const handleRoomChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         setRoom(e.target.value);
     };
 
     const handleConnect = () => {
-        if (username.trim() !== '' && room !== '') setIsConnected(true);
+        if (room !== '') setIsConnected(true);
     };
 
     const handleSend = (e: React.FormEvent) => {
@@ -96,13 +111,6 @@ const ChatRoom: React.FC = () => {
                         ))}
                     </select>
                 </div>
-                <input
-                    type="text"
-                    value={username}
-                    onChange={handleUsernameChange}
-                    placeholder="Your name"
-                    style={{ width: '80%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
-                />
                 <button onClick={handleConnect} style={{ marginLeft: 8, padding: '8px 16px' }}>
                     Connect
                 </button>
