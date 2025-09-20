@@ -3,29 +3,51 @@
 import React, { useEffect, useState } from "react";
 import type { JSX } from "react";
 
-const C = 10; // number of columns (6..10 allowed in original, using 7 here)
-const ROWS = 10;
+// replace fixed-size constants with adjustable min/max and state
+const MIN_COLS = 3;
+const MAX_COLS = 15;
+const MIN_ROWS = 3;
+const MAX_ROWS = 15;
 
 export default function Chomp(): JSX.Element {
-	// box[r][c] uses 1-based indices for convenience: rows 1..ROWS (1=bottom), cols 1..C
-	const emptyBoard = (): number[][] => {
+	// rows/cols are dynamic now
+	const [cols, setCols] = useState<number>(8);
+	const [rows, setRows] = useState<number>(9);
+	// game status
+	const [gameOver, setGameOver] = useState<boolean>(false);
+	const [gameMessage, setGameMessage] = useState<string>("");
+
+	const emptyBoard = (rCount = rows, cCount = cols): number[][] => {
 		const b: number[][] = [];
-		for (let r = 0; r <= ROWS; r++) {
+		for (let r = 0; r <= rCount; r++) {
 			b[r] = [];
-			for (let col = 0; col <= C; col++) {
+			for (let col = 0; col <= cCount; col++) {
 				b[r][col] = 0;
 			}
 		}
 		return b;
 	};
 
-	const [box, setBox] = useState<number[][]>(emptyBoard);
+	const [box, setBox] = useState<number[][]>(() => emptyBoard());
 
-	// initialize board
+	// helper to get random int inclusive
+	const randInt = (min: number, max: number) =>
+		Math.floor(Math.random() * (max - min + 1)) + min;
+
+	// initialize board — pick a random size each game
 	const playAgain = () => {
-		const b = emptyBoard();
-		for (let r = 1; r <= ROWS; r++) {
-			for (let col = 1; col <= C; col++) {
+		// clear any previous game state
+		setGameOver(false);
+		setGameMessage("");
+		const newCols = randInt(MIN_COLS, MAX_COLS);
+		const newRows = randInt(MIN_ROWS, MAX_ROWS);
+		// set state
+		setCols(newCols);
+		setRows(newRows);
+		// build board using chosen sizes (use local variables to avoid relying on async setState)
+		const b = emptyBoard(newRows, newCols);
+		for (let r = 1; r <= newRows; r++) {
+			for (let col = 1; col <= newCols; col++) {
 				b[r][col] = 1; // square present
 			}
 		}
@@ -41,30 +63,31 @@ export default function Chomp(): JSX.Element {
 	// remove (chomp) all squares with row >= r and col >= c (rows counted bottom->top)
 	const doMove = (r: number, col: number, curBox: number[][] | null = null) => {
 		const prev = curBox ?? box;
-		const b = emptyBoard();
-		// copy previous
-		for (let rr = 1; rr <= ROWS; rr++) {
-			for (let cc = 1; cc <= C; cc++) {
-				b[rr][cc] = prev[rr][cc];
+		const b = emptyBoard(rows, cols);
+		// copy previous (only up to current rows/cols)
+		for (let rr = 1; rr <= rows; rr++) {
+			for (let cc = 1; cc <= cols; cc++) {
+				b[rr][cc] = prev[rr]?.[cc] ?? 0;
 			}
-		}
-		for (let rr = r; rr <= ROWS; rr++) {
-			for (let cc = col; cc <= C; cc++) {
+		} 
+		for (let rr = r; rr <= rows; rr++) {
+			for (let cc = col; cc <= cols; cc++) {
 				b[rr][cc] = 0;
 			}
 		}
 		return b;
 	};
 
-	const isPoisonEaten = (b: number[][]) => b[1][1] === 0;
+	const isPoisonEaten = (b: number[][]) => b[1]?.[1] === 0;
 
 	const playerMove = (r: number, col: number) => {
-		if (box[r][col] !== 1) return; // invalid click
+		if (box[r]?.[col] !== 1) return; // invalid click
 		const afterPlayer = doMove(r, col);
 		setBox(afterPlayer);
 		if (isPoisonEaten(afterPlayer)) {
-			alert("You chomped the poison! You lose.");
-			playAgain();
+			// stop and show message; user must click New Game
+			setGameOver(true);
+			setGameMessage("You died, cmon man.");
 			return;
 		}
 		// Computer turn
@@ -76,14 +99,14 @@ export default function Chomp(): JSX.Element {
 	// Simple AI: collect valid moves, avoid immediate poison-eating move if possible
 	const computerTurn = (curBox: number[][]) => {
 		const moves: { r: number; c: number }[] = [];
-		for (let r = 1; r <= ROWS; r++) {
-			for (let c = 1; c <= C; c++) {
-				if (curBox[r][c] === 1) moves.push({ r, c });
+		for (let r = 1; r <= rows; r++) {
+			for (let c = 1; c <= cols; c++) {
+				if (curBox[r]?.[c] === 1) moves.push({ r, c });
 			}
 		}
 		if (moves.length === 0) {
-			alert("No moves left — draw.");
-			playAgain();
+			setGameOver(true);
+			setGameMessage("No moves left — draw.");
 			return;
 		}
 		// prefer moves that do NOT immediately eat the poison if possible
@@ -101,8 +124,8 @@ export default function Chomp(): JSX.Element {
 		const afterAI = doMove(chosen.r, chosen.c, curBox);
 		setBox(afterAI);
 		if (isPoisonEaten(afterAI)) {
-			alert("Computer chomped the poison — you win!");
-			playAgain();
+			setGameOver(true);
+			setGameMessage("Computer ate the poison — you will not win ever again!");
 		}
 	};
 
@@ -115,7 +138,7 @@ export default function Chomp(): JSX.Element {
 			alignItems: "center",
 			justifyContent: "center",
 			border: "1px solid #444",
-			background: present ? (isPoison ? "rgba(0, 0, 0, 1)" : "#00ff04ff") : "#ddd",
+			background: present ? (isPoison ? "rgba(47, 40, 32, 1)" : "#4c391cff") : "#ddd",
 			color: isPoison ? "white" : "black",
 			fontWeight: isPoison ? 700 : 400,
 			cursor: present ? "pointer" : "default",
@@ -126,13 +149,13 @@ export default function Chomp(): JSX.Element {
 		<div style={{ fontFamily: "sans-serif", padding: 12 }}>
 			<hr />
 			<h1>CHOMP!</h1>
-			<p>The lower-left square is poisoned. Click a square to chomp it and everything to its right and above. Don't eat the poison!</p>
+			<p>The lower-left square is poisoned — don't eat it. Start a new random board with the button below.</p>
 
 			<div style={{ display: "inline-block", border: "2px solid #222", padding: 6 }}>
-				{/* render rows top -> bottom (adjustable via ROWS) */}
-				{Array.from({ length: ROWS }, (_, i) => ROWS - i).map((r) => (
+				{/* render rows top -> bottom (adjustable via rows/cols) */}
+				{Array.from({ length: rows }, (_, i) => rows - i).map((r) => (
 					<div key={r} style={{ display: "flex" }}>
-						{Array.from({ length: C }, (_, idx) => {
+						{Array.from({ length: cols }, (_, idx) => {
 							const col = idx + 1;
 							const present = box[r]?.[col] === 1;
 							const isPoison = r === 1 && col === 1;
@@ -140,7 +163,8 @@ export default function Chomp(): JSX.Element {
 								<div
 									key={`${r}-${col}`}
 									style={cellStyle(present, isPoison)}
-									onClick={() => present && playerMove(r, col)}
+									// disable clicking when game is over
+									onClick={() => present && !gameOver && playerMove(r, col)}
 									title={isPoison ? "Poison" : present ? "Chocolate" : "Removed"}
 								>
 									{/* no emoji: visual state is conveyed by background color */}
@@ -153,7 +177,16 @@ export default function Chomp(): JSX.Element {
 
 			<div style={{ marginTop: 12 }}>
 				<button onClick={playAgain}>New Game</button>
-			</div>
-		</div>
-	);
-}
+				{gameOver && (
+					<div style={{ marginTop: 8, color: "#ffddcc", fontWeight: 700 }}>
+						{gameMessage}
+					</div>
+				)}
+ 				{/* show current board size */}
+ 				<div style={{ marginTop: 8, color: "#ccc" }}>
+ 					Board: {rows} rows × {cols} cols
+ 				</div>
+ 			</div>
+ 		</div>
+ 	);
+ }
