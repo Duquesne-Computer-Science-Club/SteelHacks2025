@@ -75,6 +75,15 @@ const ChatRoom: React.FC = () => {
         if (username.trim() !== '' && room !== '') setIsConnected(true);
     };
 
+    const handleSend = (e: React.FormEvent) => {
+        e.preventDefault();
+        const trimmed = input.trim();
+        if (trimmed && !messages.find(msg => msg.text === trimmed && msg.sender === username)) {
+            setMessages([...messages, { sender: username, text: trimmed, timestamp: Date.now() }]);
+        }
+        setInput('');
+    };
+
     if (!isConnected) {
         return (
             <div style={{ maxWidth: 400, margin: '0 auto', border: '1px solid #ccc', borderRadius: 8, padding: 16 }}>
@@ -102,42 +111,89 @@ const ChatRoom: React.FC = () => {
     }
 
     return (
-        <div style={{ maxWidth: 400, margin: '0 auto', border: '1px solid #ccc', borderRadius: 8, padding: 16 }}>
-            <h2>Chatroom</h2>
-            <div style={{ marginBottom: 8 }}>
-                <span>Connected as: <strong>{username}</strong></span>
-                <span style={{ marginLeft: 16 }}>Room: <strong>{room}</strong></span>
-            </div>
-            <div style={{ height: 300, overflowY: 'auto', border: '1px solid #eee', padding: 8, marginBottom: 8 }}>
+        <div
+            style={{
+                width: '100%',
+                height: '100%',
+                background: 'linear-gradient(135deg, #232526 0%, #414345 100%)',
+                borderRadius: '12px',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
+                display: 'flex',
+                flexDirection: 'column',
+                padding: '24px',
+                color: '#f5f5f5',
+            }}
+        >
+            <div
+                style={{
+                    flex: 1,
+                    overflowY: 'auto',
+                    marginBottom: '16px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '10px',
+                }}
+            >
                 {messages.map((msg, idx) => (
-                    <div key={idx} style={{ textAlign: msg.sender === username ? 'right' : 'left', margin: '4px 0' }}>
-                        <span
-                            style={{
-                                display: 'inline-block',
-                                background: msg.sender === username ? '#e3f2fd' : '#ffe0b2',
-                                borderRadius: 12,
-                                padding: '6px 12px',
-                                maxWidth: '70%',
-                                wordBreak: 'break-word',
-                            }}
-                        >
-                            <strong>{msg.sender}:</strong> {msg.text}
-                        </span>
+                    <div
+                        key={idx}
+                        style={{
+                            alignSelf: 'flex-start',
+                            background: 'rgba(60, 60, 80, 0.85)',
+                            color: '#fff',
+                            padding: '10px 16px',
+                            borderRadius: '18px',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                            maxWidth: '80%',
+                            fontSize: '1rem',
+                            border: '1px solid #6c63ff',
+                        }}
+                    >
+                        {msg.sender}: {msg.text}
                     </div>
                 ))}
                 <div ref={messagesEndRef} />
             </div>
-            <input
-                type="text"
-                value={input}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                placeholder="Type a message..."
-                style={{ width: '80%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }}
-            />
-            <button onClick={sendMessage} style={{ marginLeft: 8, padding: '8px 16px' }}>
-                Send
-            </button>
+            <form
+                onSubmit={handleSend}
+                style={{
+                    display: 'flex',
+                    gap: '8px',
+                }}
+            >
+                <input
+                    type="text"
+                    value={input}
+                    onChange={handleInputChange}
+                    onKeyDown={handleKeyDown}
+                    placeholder="Type a message..."
+                    style={{
+                        flex: 1,
+                        padding: '12px',
+                        borderRadius: '8px',
+                        border: '1px solid #6c63ff',
+                        backgroundColor: '#232526',
+                        color: '#f5f5f5',
+                        fontSize: '1rem',
+                        outline: 'none',
+                    }}
+                />
+                <button
+                    type="submit"
+                    style={{
+                        padding: '12px 20px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        background: 'linear-gradient(90deg, #6c63ff 0%, #48c6ef 100%)',
+                        color: '#fff',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        transition: 'background 0.3s',
+                    }}
+                >
+                    Send
+                </button>
+            </form>
         </div>
     );
 };
