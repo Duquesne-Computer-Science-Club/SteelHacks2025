@@ -17,6 +17,9 @@ export default function Chomp(): JSX.Element {
 	const [gameOver, setGameOver] = useState<boolean>(false);
 	const [gameMessage, setGameMessage] = useState<string>("");
 
+	// visual state for New Game button press
+	const [buttonPressed, setButtonPressed] = useState<boolean>(false);
+
 	const emptyBoard = (rCount = rows, cCount = cols): number[][] => {
 		const b: number[][] = [];
 		for (let r = 0; r <= rCount; r++) {
@@ -138,18 +141,33 @@ export default function Chomp(): JSX.Element {
 			alignItems: "center",
 			justifyContent: "center",
 			border: "1px solid #444",
-			background: present ? (isPoison ? "rgba(47, 40, 32, 1)" : "#4c391cff") : "#ddd",
+			background: present ? (isPoison ? "rgba(153, 79, 0, 1)" : "rgba(225, 190, 106, 1)") : "#ddd",
 			color: isPoison ? "white" : "black",
 			fontWeight: isPoison ? 700 : 400,
 			cursor: present ? "pointer" : "default",
 			userSelect: "none",
 		} as React.CSSProperties);
 
+	const onButtonPressStart = () => setButtonPressed(true);
+	const onButtonPressEnd = () => setButtonPressed(false);
+
+	const newGameButtonStyle: React.CSSProperties = {
+		padding: "8px 14px",
+		border: "2px solid #8fb3ff",
+		borderRadius: 8,
+		background: buttonPressed ? "#2b6be0" : "#1f2937",
+		color: buttonPressed ? "#fff" : "#dbeafe",
+		cursor: "pointer",
+		transition: "transform 120ms ease, background 120ms ease, box-shadow 120ms ease",
+		boxShadow: buttonPressed ? "inset 0 2px 6px rgba(0,0,0,0.4)" : "0 4px 10px rgba(16,24,40,0.4)",
+		transform: buttonPressed ? "scale(0.98)" : "scale(1)",
+	};
+
 	return (
 		<div style={{ fontFamily: "sans-serif", padding: 12 }}>
 			<hr />
-			<h1>CHOMP!</h1>
-			<p>The lower-left square is poisoned — don't eat it. Start a new random board with the button below.</p>
+			<h1>Accesible Gluten-Free Chocolate Eating Contest!</h1>
+			<p>If you click on the bottom-left chocolate, you will die and fail the entire game. Start a new random board with the button below.</p>
 
 			<div style={{ display: "inline-block", border: "2px solid #222", padding: 6 }}>
 				{/* render rows top -> bottom (adjustable via rows/cols) */}
@@ -176,7 +194,18 @@ export default function Chomp(): JSX.Element {
 			</div>
 
 			<div style={{ marginTop: 12 }}>
-				<button onClick={playAgain}>New Game</button>
+				<button
+					onClick={playAgain}
+					onMouseDown={onButtonPressStart}
+					onMouseUp={onButtonPressEnd}
+					onMouseLeave={onButtonPressEnd}
+					onTouchStart={onButtonPressStart}
+					onTouchEnd={onButtonPressEnd}
+					style={newGameButtonStyle}
+					aria-pressed={buttonPressed}
+				>
+					New Game
+				</button>
 				{gameOver && (
 					<div style={{ marginTop: 8, color: "#ffddcc", fontWeight: 700 }}>
 						{gameMessage}
