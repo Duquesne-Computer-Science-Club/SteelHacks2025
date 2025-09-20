@@ -1,14 +1,14 @@
 ## Chomp With Friends
 
-*Objective:*
+**Objective:**
 The goal of the game is to make the other player eat the poisoned chocolate in the bottom left corner.
 
-*Gameplay:*
+**Gameplay:**
 * Players take turns eating 1 or more pieces of chocolate 
 * Eventually, there is only the poisoned piece left to eat
 * At this point the game ends
 
-*Modes:*
+**Modes:**
 * Player vs computer
 * Player vs player (requires authentication because of live chat features)
 
