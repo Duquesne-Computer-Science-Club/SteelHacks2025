@@ -16,7 +16,7 @@ export default function LoginPage() {
     localStorage.setItem("sessionId", sessionId);
     // Set session id cookie
     document.cookie = `sessionId=${sessionId}; path=/;`;
-    window.location.href = "/game";
+    window.location.href = "/pvp";
   };
 
   return (

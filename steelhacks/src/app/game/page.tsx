@@ -1,11 +1,27 @@
 "use client";
-import Chatroom from "@/components/chatroom";
 import PVE from "@/components/pve";
-import PVP from "@/components/pvp";
 import React, { useState } from "react";
+import { useRouter } from "next/navigation";
 
 export default function GamePage() {
-  const [mode, setMode] = useState<"pve" | "pvp">("pve");
+  const router = useRouter();
+  const [mainPressed, setMainPressed] = useState(false);
+
+  const onMainPressStart = () => setMainPressed(true);
+  const onMainPressEnd = () => setMainPressed(false);
+
+  const mainButtonStyle: React.CSSProperties = {
+    padding: "8px 14px",
+    border: "2px solid #8fb3ff",
+    borderRadius: 8,
+    background: mainPressed ? "#2b6be0" : "#1f2937",
+    color: mainPressed ? "#fff" : "#dbeafe",
+    cursor: "pointer",
+    transition: "transform 120ms ease, background 120ms ease, box-shadow 120ms ease",
+    boxShadow: mainPressed ? "inset 0 2px 6px rgba(0,0,0,0.4)" : "0 4px 10px rgba(16,24,40,0.4)",
+    transform: mainPressed ? "scale(0.98)" : "scale(1)",
+  };
+
   return (
     <div
       style={{
@@ -23,67 +39,35 @@ export default function GamePage() {
       {/* Left side: Game placeholder */}
       <div
         style={{
-          flex: mode === "pve" ? 1 : 2, // expand when PVE selected
+          flex: 1,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          borderRight: "2px solid #444",
           paddingRight: "20px",
         }}
       >
-        {/* mode toggle */}
-        <div style={{ marginBottom: 12, display: "flex", gap: 8 }}>
+        <div style={{ width: "100%", display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>
+          <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+            <PVE />
+          </div>
           <button
-            onClick={() => setMode("pve")}
-            style={{
-              padding: "6px 12px",
-              borderRadius: 8,
-              border: mode === "pve" ? "2px solid #8fb3ff" : "1px solid #444",
-              background: mode === "pve" ? "#1f2937" : "transparent",
-              color: "#fff",
-              cursor: "pointer",
-            }}
+            onClick={() => router.push("/")}
+            onMouseDown={onMainPressStart}
+            onMouseUp={onMainPressEnd}
+            onMouseLeave={onMainPressEnd}
+            onTouchStart={onMainPressStart}
+            onTouchEnd={onMainPressEnd}
+            style={mainButtonStyle}
+            aria-pressed={mainPressed}
           >
-            Player vs Env
-          </button>
-          <button
-            onClick={() => setMode("pvp")}
-            style={{
-              padding: "6px 12px",
-              borderRadius: 8,
-              border: mode === "pvp" ? "2px solid #8fb3ff" : "1px solid #444",
-              background: mode === "pvp" ? "#1f2937" : "transparent",
-              color: "#fff",
-              cursor: "pointer",
-            }}
-          >
-            Player vs Player
+            Main Page
           </button>
         </div>
-
-        {/* Render selected game component */}
-        <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-          {mode === "pve" ? <PVE /> : <PVP />}
-        </div>
-        {/* Removed Main Page button */}
+        {/* Main Page button above */}
       </div>
 
-      {/* Right side: Chatroom (render only for PVP) */}
-      {mode === "pvp" && (
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "flex-start",
-            paddingLeft: "20px",
-          }}
-        >
-          <Chatroom />
-        </div>
-      )}
+      {/* no right column for chatroom in PVE-only page */}
     </div>
   );
 }
