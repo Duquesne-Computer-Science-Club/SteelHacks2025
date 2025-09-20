@@ -31,6 +31,9 @@ const ChatRoom: React.FC = () => {
     const [room, setRoom] = useState<string>('');
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
+    // Connect button visual state
+    const [connectPressed, setConnectPressed] = useState<boolean>(false);
+
     // Get username from session on mount
     useEffect(() => {
         setUsername(getUsernameFromSession());
@@ -99,19 +102,69 @@ const ChatRoom: React.FC = () => {
         setInput('');
     };
 
+    const onConnectPressStart = () => setConnectPressed(true);
+    const onConnectPressEnd = () => setConnectPressed(false);
+
+    const connectButtonStyle: React.CSSProperties = {
+        padding: '8px 14px',
+        border: '2px solid #8fb3ff',
+        borderRadius: 8,
+        background: connectPressed ? '#2b6be0' : '#1f2937',
+        color: connectPressed ? '#fff' : '#dbeafe',
+        cursor: 'pointer',
+        transition: 'transform 120ms ease, background 120ms ease, box-shadow 120ms ease',
+        boxShadow: connectPressed ? 'inset 0 2px 6px rgba(0,0,0,0.4)' : '0 4px 10px rgba(16,24,40,0.4)',
+        transform: connectPressed ? 'scale(0.98)' : 'scale(1)',
+    };
+
     if (!isConnected) {
         return (
-            <div style={{ maxWidth: 400, margin: '0 auto', border: '1px solid #ccc', borderRadius: 8, padding: 16 }}>
-                <h2>Join a chatroom</h2>
+            <div
+                style={{
+                    maxWidth: 400,
+                    margin: '0 auto',
+                    border: '1px solid #e5e7eb',
+                    borderRadius: 8,
+                    padding: 16,
+                    color: '#ffffffff', // dark text for readability
+                    background: '#232526',
+                    boxShadow: '0 8px 20px rgba(16,24,40,0.06)',
+                }}
+            >
+                <h2 style={{ marginTop: 0 }}>Join a chatroom</h2>
                 <div style={{ marginBottom: 8 }}>
-                    <select value={room} onChange={handleRoomChange} style={{ width: '80%', padding: 8, borderRadius: 4, border: '1px solid #ccc' }}>
+                    <select
+                        value={room}
+                        onChange={handleRoomChange}
+                        style={{
+                            display: 'inline-block',
+                            width: 'auto',
+                            minWidth: 160,
+                            padding: 8,
+                            borderRadius: 4,
+                            border: '1px solid #d1d5db',
+                            background: '#ffffffff',
+                            color: '#111827',
+                        }}
+                    >
                         <option value="">Select a room...</option>
-                        {ROOMS.map(r => (
-                            <option key={r} value={r}>{r}</option>
+                        {ROOMS.map((r) => (
+                            <option key={r} value={r}>
+                                {r}
+                            </option>
                         ))}
                     </select>
                 </div>
-                <button onClick={handleConnect} style={{ marginLeft: 8, padding: '8px 16px' }}>
+                <button
+                    onClick={handleConnect}
+                    onMouseDown={onConnectPressStart}
+                    onMouseUp={onConnectPressEnd}
+                    onMouseLeave={onConnectPressEnd}
+                    onTouchStart={onConnectPressStart}
+                    onTouchEnd={onConnectPressEnd}
+                    style={{ marginLeft: 8, ...connectButtonStyle }}
+                    aria-pressed={connectPressed}
+                >
                     Connect
                 </button>
             </div>

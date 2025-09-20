@@ -1,6 +1,6 @@
 "use client";
 import Chatroom from "@/components/chatroom";
-import Chomp from "@/components/chomp"; // added import
+import PVP from "@/components/pvp"; // use player-vs-player component
 
 export default function GamePage() {
   return (
@@ -31,7 +31,7 @@ export default function GamePage() {
       >
         {/* Render Chomp game here instead of placeholder */}
         <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-          <Chomp />
+          <PVP />
         </div>
         {/* Removed Main Page button */}
       </div>

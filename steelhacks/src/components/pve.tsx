@@ -9,7 +9,7 @@ const MAX_COLS = 15;
 const MIN_ROWS = 3;
 const MAX_ROWS = 15;
 
-export default function Chomp(): JSX.Element {
+export default function PVE(): JSX.Element {
 	// rows/cols are dynamic now
 	const [cols, setCols] = useState<number>(8);
 	const [rows, setRows] = useState<number>(9);
