@@ -1,5 +1,6 @@
 "use client";
 import Chatroom from "@/components/chatroom";
+import Chomp from "@/components/chomp"; // added import
 
 export default function GamePage() {
   return (
@@ -28,22 +29,9 @@ export default function GamePage() {
           paddingRight: "20px",
         }}
       >
-        {/* Removed icon */}
-        <div
-          style={{
-            width: "100%",
-            height: "100%",
-            backgroundColor: "#333",
-            borderRadius: "12px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "#bbb",
-            fontSize: "1.5rem",
-            flex: 1,
-          }}
-        >
-          Game Placeholder
+        {/* Render Chomp game here instead of placeholder */}
+        <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+          <Chomp />
         </div>
         {/* Removed Main Page button */}
       </div>
