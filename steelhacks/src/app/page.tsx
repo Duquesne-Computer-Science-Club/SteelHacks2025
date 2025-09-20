@@ -1,30 +1,77 @@
+'use client';
+
 import Link from 'next/link';
 
 export default function HomePage() {
+  const handleMouseEnter = (e) => {
+    e.target.style.transform = 'scale(1.05)';
+  };
+  const handleMouseLeave = (e) => {
+    e.target.style.transform = 'scale(1)';
+  };
+
   return (
     <main
       style={{
         minHeight: '100vh',
+        backgroundColor: '#4B2E2E', // deep chocolate background
         display: 'flex',
+        flexDirection: 'column',
         justifyContent: 'center',
         alignItems: 'center',
+        padding: '40px',
+        fontFamily: "'Pacifico', cursive", // optional fun font
+        color: '#fff',
+        textAlign: 'center',
       }}
     >
-      <Link
-        href="/auth"
-        style={{
-          padding: '1rem 2rem',
-          background: '#0070f3',
-          color: '#fff',
-          borderRadius: '8px',
-          textDecoration: 'none',
-          fontSize: '1.25rem',
-          fontWeight: 'bold',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-        }}
-      >
-        Login
-      </Link>
+      <h1 style={{ fontSize: '3rem', marginBottom: '20px' }}>Welcome to the Chocolate World!</h1>
+      <p style={{ fontSize: '1.2rem', marginBottom: '40px' }}>
+        Dive into deliciousness with our exciting options below!
+      </p>
+      {/* Buttons */}
+      <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+        {/* Link to /game */}
+        <Link href="/game" legacyBehavior>
+          <a
+            style={{
+              padding: '15px 30px',
+              backgroundColor: '#FF6F61', // coral pink
+              color: '#fff',
+              borderRadius: '12px',
+              fontSize: '1.25rem',
+              fontWeight: 'bold',
+              textDecoration: 'none',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+              transition: 'all 0.3s ease',
+            }}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            Play Against Computer
+          </a>
+        </Link>
+        {/* Link to /auth */}
+        <Link href="/auth" legacyBehavior>
+          <a
+            style={{
+              padding: '15px 30px',
+              backgroundColor: '#6A4E42', // rich brown
+              color: '#fff',
+              borderRadius: '12px',
+              fontSize: '1.25rem',
+              fontWeight: 'bold',
+              textDecoration: 'none',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+              transition: 'all 0.3s ease',
+            }}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
+          >
+            Login for PvP
+          </a>
+        </Link>
+      </div>
     </main>
   );
 }
