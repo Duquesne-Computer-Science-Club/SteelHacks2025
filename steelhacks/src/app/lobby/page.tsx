@@ -131,6 +131,15 @@ export default function LobbiesPage() {
   ))}
 </ul>
       )}
+	  
+	  <div className="mt-6 text-center">
+        <button
+          onClick={() => router.push('/')}
+          className="bg-red-800 text-white px-4 py-2 rounded hover:bg-gray-700 transition"
+        >
+          Go to Home
+        </button>
+      </div>
     </div>
   );
 }
