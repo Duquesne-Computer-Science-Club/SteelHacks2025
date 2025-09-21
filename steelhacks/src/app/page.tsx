@@ -3,10 +3,18 @@
 import Link from 'next/link';
 
 export default function HomePage() {
-  const handleMouseEnter = (e) => {
+  interface MouseEventWithTarget extends React.MouseEvent<HTMLAnchorElement> {
+    target: HTMLAnchorElement;
+  }
+
+  const handleMouseEnter = (e: MouseEventWithTarget): void => {
     e.target.style.transform = 'scale(1.05)';
   };
-  const handleMouseLeave = (e) => {
+  interface MouseEventWithTarget extends React.MouseEvent<HTMLAnchorElement> {
+    target: HTMLAnchorElement;
+  }
+
+  const handleMouseLeave = (e: MouseEventWithTarget) => {
     e.target.style.transform = 'scale(1)';
   };
 
