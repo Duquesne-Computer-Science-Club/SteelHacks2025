@@ -28,15 +28,7 @@ export default function HomePage() {
         
       </div>
 	  
-	  <div style={{ marginBottom: '20px' }}>
-        <Image
-          src="/images/cwfl.png"
-          alt="Good luck 🎮"
-          width={300}
-          height={200}
-          style={{ borderRadius: '10px' }}
-        />
-      </div>
+	  
     </main>
   );
 }
