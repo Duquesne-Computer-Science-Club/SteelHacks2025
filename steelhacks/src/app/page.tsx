@@ -1,6 +1,6 @@
-'use client';
-
+'use client'
 import Link from 'next/link';
+import { auth0 } from "@/lib/auth0";
 
 export default function HomePage() {
   const handleMouseEnter = (e: React.MouseEvent<HTMLAnchorElement>) => {
@@ -13,6 +13,8 @@ export default function HomePage() {
   const handleMouseLeave: MouseEventHandler = (e) => {
     (e.target as HTMLAnchorElement).style.transform = 'scale(1)';
   };
+  
+  const session = auth0.getSession();
 
   return (
     <main
