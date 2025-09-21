@@ -1,10 +1,25 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { auth0 } from "../lib/auth0";
 import React from "react";
+
 
 export default function HomePage() {
   const router = useRouter();
+
+  const handleMouseEnter = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    (e.target as HTMLAnchorElement).style.transform = 'scale(1.05)';
+  };
+  interface MouseEventHandler {
+    (e: React.MouseEvent<HTMLAnchorElement>): void;
+  }
+
+  const handleMouseLeave: MouseEventHandler = (e) => {
+    (e.target as HTMLAnchorElement).style.transform = 'scale(1)';
+  };
+  
+  const session = auth0.getSession();
 
   return (
     <div
