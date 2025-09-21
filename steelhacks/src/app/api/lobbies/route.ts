@@ -58,12 +58,14 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "Lobby not found" }, { status: 404 });
   }
 
-  lobby.players -= 1;
+  // 🔒 Decrement but not below 0
+  lobby.players = Math.max(0, lobby.players - 1);
 
-  // Remove if empty
-  if (lobby.players <= 0) {
+  // 🧹 Remove if empty
+  if (lobby.players === 0) {
     lobbies = lobbies.filter((l) => l.id !== id);
+    return NextResponse.json({ success: true, removed: true });
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, lobby });
 }
