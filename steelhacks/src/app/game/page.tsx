@@ -1,11 +1,77 @@
 "use client";
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Chatroom from "@/components/chatroom";
-import PVE from "@/components/pve";
-import PVP from "@/components/pvp";
-import React, { useState } from "react";
+import Chomp from "@/components/chomp";
+
+type Lobby = {
+  id: string;
+  name: string;
+  players: number;
+};
 
 export default function GamePage() {
-  const [mode, setMode] = useState<"pve" | "pvp">("pve");
+  const [lobby, setLobby] = useState<Lobby | null>(null);
+  const router = useRouter();
+
+  // Load active lobby from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("activeLobby");
+    if (stored) {
+      setLobby(JSON.parse(stored));
+    } else {
+      router.replace("/lobby");
+    }
+  }, [router]);
+
+  // Fetch the latest lobby info periodically
+  useEffect(() => {
+    if (!lobby) return;
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch("/api/lobbies");
+        if (!res.ok) return;
+
+        const data = await res.json();
+        const updatedLobby = data.lobbies.find((l: Lobby) => l.id === lobby.id);
+
+        if (!updatedLobby) {
+          // Lobby no longer exists → remove local storage and redirect
+          localStorage.removeItem("activeLobby");
+          router.replace("/lobby");
+        } else {
+          setLobby(updatedLobby); // update players count
+        }
+      } catch (err) {
+        console.error("Failed to refresh lobby:", err);
+      }
+    }, 2000); // refresh every 2 seconds
+
+    return () => clearInterval(interval);
+  }, [lobby, router]);
+
+  // Leave lobby → notify backend + clear localStorage + redirect
+  const handleLeaveLobby = async () => {
+    if (!lobby) {
+      router.replace("/lobby");
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/lobbies?id=${lobby.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        console.warn(`Lobby ${lobby.id} could not be left. Status: ${res.status}`);
+      }
+    } catch (err) {
+      console.error("Error leaving lobby:", err);
+    } finally {
+      localStorage.removeItem("activeLobby");
+      router.replace("/lobby");
+    }
+  };
+
+  if (!lobby) return null;
+
   return (
     <div
       style={{
@@ -18,72 +84,61 @@ export default function GamePage() {
         justifyContent: "center",
         padding: "20px",
         textAlign: "center",
+        position: "relative",
       }}
     >
-      {/* Left side: Game placeholder */}
+      {/* Left side: Game */}
       <div
         style={{
-          flex: mode === "pve" ? 1 : 2, // expand when PVE selected
+          flex: 1,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          borderRight: "2px solid #444",
           paddingRight: "20px",
         }}
       >
-        {/* mode toggle */}
-        <div style={{ marginBottom: 12, display: "flex", gap: 8 }}>
-          <button
-            onClick={() => setMode("pve")}
-            style={{
-              padding: "6px 12px",
-              borderRadius: 8,
-              border: mode === "pve" ? "2px solid #8fb3ff" : "1px solid #444",
-              background: mode === "pve" ? "#1f2937" : "transparent",
-              color: "#fff",
-              cursor: "pointer",
-            }}
-          >
-            Player vs Env
-          </button>
-          <button
-            onClick={() => setMode("pvp")}
-            style={{
-              padding: "6px 12px",
-              borderRadius: 8,
-              border: mode === "pvp" ? "2px solid #8fb3ff" : "1px solid #444",
-              background: mode === "pvp" ? "#1f2937" : "transparent",
-              color: "#fff",
-              cursor: "pointer",
-            }}
-          >
-            Player vs Player
-          </button>
-        </div>
-
-        {/* Render selected game component */}
+        <h2 style={{ marginBottom: "10px" }}>
+          Lobby: {lobby.name} ({lobby.players} players)
+        </h2>
         <div style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-          {mode === "pve" ? <PVE /> : <PVP />}
+          <Chomp />
         </div>
-        {/* Removed Main Page button */}
       </div>
 
-      {/* Right side: Chatroom (render only for PVP) */}
-      {mode === "pvp" && (
-        <div
-          style={{
-            flex: 1,
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            justifyContent: "flex-start",
-            paddingLeft: "20px",
-          }}
-        >
-          <Chatroom />
-        </div>
-      )}
+      {/* Right side: Chatroom */}
+      <div
+        style={{
+          flex: 1,
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          justifyContent: "flex-start",
+          paddingLeft: "20px",
+        }}
+      >
+        <Chatroom />
+      </div>
+
+      {/* Leave Lobby button bottom-right */}
+      <button
+        onClick={handleLeaveLobby}
+        style={{
+          position: "fixed",
+          bottom: "20px",
+          right: "20px",
+          padding: "12px 18px",
+          border: "none",
+          borderRadius: "6px",
+          backgroundColor: "#e53935",
+          color: "#fff",
+          fontWeight: "bold",
+          cursor: "pointer",
+          boxShadow: "0 2px 6px rgba(0,0,0,0.4)",
+        }}
+      >
+        Leave Lobby
+      </button>
     </div>
   );
 }
