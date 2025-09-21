@@ -3,11 +3,15 @@
 import Link from 'next/link';
 
 export default function HomePage() {
-  const handleMouseEnter = (e) => {
-    e.target.style.transform = 'scale(1.05)';
+  const handleMouseEnter = (e: React.MouseEvent<HTMLAnchorElement>) => {
+    (e.target as HTMLAnchorElement).style.transform = 'scale(1.05)';
   };
-  const handleMouseLeave = (e) => {
-    e.target.style.transform = 'scale(1)';
+  interface MouseEventHandler {
+    (e: React.MouseEvent<HTMLAnchorElement>): void;
+  }
+
+  const handleMouseLeave: MouseEventHandler = (e) => {
+    (e.target as HTMLAnchorElement).style.transform = 'scale(1)';
   };
 
   return (
@@ -52,7 +56,7 @@ export default function HomePage() {
           </a>
         </Link>
         {/* Link to /auth */}
-        <Link href="/auth" legacyBehavior>
+        <Link href="/auth/login" legacyBehavior>
           <a
             style={{
               padding: '15px 30px',
@@ -70,6 +74,9 @@ export default function HomePage() {
           >
             Login for PvP
           </a>
+        </Link>
+        <Link href="/" legacyBehavior>
+        <a href="/auth/logout">Logout</a>
         </Link>
       </div>
     </main>
