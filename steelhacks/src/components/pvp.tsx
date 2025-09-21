@@ -1,184 +1,162 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import type { JSX } from "react";
 
-// adjustable size limits
-const MIN_COLS = 3;
-const MAX_COLS = 15;
-const MIN_ROWS = 3;
-const MAX_ROWS = 15;
+type ChompState = {
+  board: number[][];
+  currentPlayer: 1 | 2;
+  gameOver: boolean;
+  gameMessage: string;
+};
 
-export default function PVP(): JSX.Element {
-	// dynamic board size
-	const [cols, setCols] = useState<number>(8);
-	const [rows, setRows] = useState<number>(6);
+type Move = { row: number; col: number } | null;
 
-	// game status
-	const [box, setBox] = useState<number[][]>(() => emptyBoard());
-	const [gameOver, setGameOver] = useState<boolean>(false);
-	const [gameMessage, setGameMessage] = useState<string>("");
-	const [currentPlayer, setCurrentPlayer] = useState<1 | 2>(1);
+const POLL_INTERVAL = 1500; // ms
 
-	// new-game button visual
-	const [buttonPressed, setButtonPressed] = useState<boolean>(false);
+export default function PVP() {
+  const lobbyId = typeof window !== "undefined"
+    ? JSON.parse(localStorage.getItem("activeLobby") || "{}")?.id
+    : null;
 
-	// helper to create empty board using provided dimensions
-	function emptyBoard(rCount = rows, cCount = cols): number[][] {
-		const b: number[][] = [];
-		for (let r = 0; r <= rCount; r++) {
-			b[r] = [];
-			for (let col = 0; col <= cCount; col++) {
-				b[r][col] = 0;
-			}
-		}
-		return b;
-	}
+  const [state, setState] = useState<ChompState | null>(null);
+  const [buttonPressed, setButtonPressed] = useState(false);
 
-	// rand int inclusive
-	const randInt = (min: number, max: number) =>
-		Math.floor(Math.random() * (max - min + 1)) + min;
+  // Fetch current game state
+  const fetchState = async () => {
+    if (!lobbyId) return;
+    try {
+      const res = await fetch(`/api/chomp?lobbyId=${lobbyId}`);
+      if (!res.ok) throw new Error("Failed to fetch game");
+      const data: ChompState = await res.json();
+      setState(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-	// start a new random game
-	const playAgain = () => {
-		setGameOver(false);
-		setGameMessage("");
-		const newCols = randInt(MIN_COLS, MAX_COLS);
-		const newRows = randInt(MIN_ROWS, MAX_ROWS);
-		setCols(newCols);
-		setRows(newRows);
-		const b = emptyBoard(newRows, newCols);
-		for (let r = 1; r <= newRows; r++) {
-			for (let col = 1; col <= newCols; col++) {
-				b[r][col] = 1;
-			}
-		}
-		setBox(b);
-		setCurrentPlayer(1);
-	};
+  // Apply move
+  const makeMove = async (row: number, col: number) => {
+    if (!lobbyId || !state || state.gameOver) return;
+    try {
+      const res = await fetch("/api/chomp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lobbyId, move: { row, col } }),
+      });
+      if (!res.ok) throw new Error("Move failed");
+      const data: ChompState = await res.json();
+      setState(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-	useEffect(() => {
-		playAgain();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+  // Start new game
+  const newGame = async () => {
+    if (!lobbyId) return;
+    try {
+      const res = await fetch("/api/chomp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ lobbyId, move: null }),
+      });
+      if (!res.ok) throw new Error("Failed to start new game");
+      const data: ChompState = await res.json();
+      setState(data);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
-	// apply a chomp move (remove row>=r and col>=c)
-	const doMove = (r: number, col: number, curBox: number[][] | null = null) => {
-		const prev = curBox ?? box;
-		const b = emptyBoard(rows, cols);
-		for (let rr = 1; rr <= rows; rr++) {
-			for (let cc = 1; cc <= cols; cc++) {
-				b[rr][cc] = prev[rr]?.[cc] ?? 0;
-			}
-		}
-		for (let rr = r; rr <= rows; rr++) {
-			for (let cc = col; cc <= cols; cc++) {
-				b[rr][cc] = 0;
-			}
-		}
-		return b;
-	};
+  // Poll server every POLL_INTERVAL
+  useEffect(() => {
+    fetchState();
+    const interval = setInterval(fetchState, POLL_INTERVAL);
+    return () => clearInterval(interval);
+  }, [lobbyId]);
 
-	const isPoisonEaten = (b: number[][]) => b[1]?.[1] === 0;
+  if (!state) return <p>Loading game...</p>;
 
-	// handle a player's click
-	const playerMove = (r: number, col: number) => {
-		if (gameOver) return;
-		if (box[r]?.[col] !== 1) return;
-		const after = doMove(r, col);
-		setBox(after);
-		if (isPoisonEaten(after)) {
-			// current player ate poison and loses
-			const loser = currentPlayer;
-			const winner = loser === 1 ? 2 : 1;
-			setGameOver(true);
-			setGameMessage(`Player ${loser} ate the poison — Player ${winner} wins!`);
-			return;
-		}
-		// toggle player
-		setCurrentPlayer((p) => (p === 1 ? 2 : 1));
-	};
+  const rows = state.board.length - 1;
+  const cols = state.board[1].length - 1;
 
-	// cell visuals
-	const cellStyle = (present: boolean, isPoison: boolean) =>
-		({
-			width: 44,
-			height: 44,
-			display: "flex",
-			alignItems: "center",
-			justifyContent: "center",
-			border: "1px solid #444",
-			background: present ? (isPoison ? "rgba(153,79,0,1)" : "rgba(225,190,106,1)") : "#ddd",
-			color: isPoison ? "white" : "black",
-			fontWeight: isPoison ? 700 : 400,
-			cursor: present && !gameOver ? "pointer" : "default",
-			userSelect: "none",
-		} as React.CSSProperties);
+  const cellStyle = (present: boolean, isPoison: boolean) => ({
+    width: 44,
+    height: 44,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    border: "1px solid #444",
+    background: present ? (isPoison ? "rgba(153,79,0,1)" : "rgba(225,190,106,1)") : "#ddd",
+    color: isPoison ? "white" : "black",
+    fontWeight: isPoison ? 700 : 400,
+    cursor: present && !state.gameOver ? "pointer" : "default",
+    userSelect: "none",
+  } as React.CSSProperties);
 
-	const onButtonPressStart = () => setButtonPressed(true);
-	const onButtonPressEnd = () => setButtonPressed(false);
+  const onButtonPressStart = () => setButtonPressed(true);
+  const onButtonPressEnd = () => setButtonPressed(false);
 
-	const newGameButtonStyle: React.CSSProperties = {
-		padding: "8px 14px",
-		border: "2px solid #8fb3ff",
-		borderRadius: 8,
-		background: buttonPressed ? "#2b6be0" : "#1f2937",
-		color: buttonPressed ? "#fff" : "#dbeafe",
-		cursor: "pointer",
-		transition: "transform 120ms ease, background 120ms ease, box-shadow 120ms ease",
-		boxShadow: buttonPressed ? "inset 0 2px 6px rgba(0,0,0,0.4)" : "0 4px 10px rgba(16,24,40,0.4)",
-		transform: buttonPressed ? "scale(0.98)" : "scale(1)",
-	};
+  const newGameButtonStyle: React.CSSProperties = {
+    padding: "8px 14px",
+    border: "2px solid #8fb3ff",
+    borderRadius: 8,
+    background: buttonPressed ? "#2b6be0" : "#1f2937",
+    color: buttonPressed ? "#fff" : "#dbeafe",
+    cursor: "pointer",
+    transition: "transform 120ms ease, background 120ms ease, box-shadow 120ms ease",
+    boxShadow: buttonPressed ? "inset 0 2px 6px rgba(0,0,0,0.4)" : "0 4px 10px rgba(16,24,40,0.4)",
+    transform: buttonPressed ? "scale(0.98)" : "scale(1)",
+    marginTop: 8,
+  };
 
-	return (
-		<div style={{ fontFamily: "sans-serif", padding: 12 }}>
-			<hr />
-			<h1>CHOMP — Player vs Player</h1>
-			<p>Players alternate chomps. Bottom-left square is poisoned — avoid it. Start a new random board with the button below.</p>
+  return (
+    <div style={{ fontFamily: "sans-serif", padding: 12 }}>
+      <h1>CHOMP — Player vs Player</h1>
+      <p>Players alternate chomps. Bottom-left square is poisoned — avoid it.</p>
 
-			<div style={{ display: "inline-block", border: "2px solid #222", padding: 6 }}>
-				{/* render rows top -> bottom */}
-				{Array.from({ length: rows }, (_, i) => rows - i).map((r) => (
-					<div key={r} style={{ display: "flex" }}>
-						{Array.from({ length: cols }, (_, idx) => {
-							const col = idx + 1;
-							const present = box[r]?.[col] === 1;
-							const isPoison = r === 1 && col === 1;
-							return (
-								<div
-									key={`${r}-${col}`}
-									style={cellStyle(present, isPoison)}
-									onClick={() => present && !gameOver && playerMove(r, col)}
-									title={isPoison ? "Poison" : present ? "Chocolate" : "Removed"}
-								/>
-							);
-						})}
-					</div>
-				))}
-			</div>
+      <div style={{ display: "inline-block", border: "2px solid #222", padding: 6 }}>
+        {Array.from({ length: rows }, (_, i) => rows - i).map((r) => (
+          <div key={r} style={{ display: "flex" }}>
+            {Array.from({ length: cols }, (_, idx) => {
+              const col = idx + 1;
+              const present = state.board[r]?.[col] === 1;
+              const isPoison = r === 1 && col === 1;
+              return (
+                <div
+                  key={`${r}-${col}`}
+                  style={cellStyle(present, isPoison)}
+                  onClick={() => present && !state.gameOver && makeMove(r, col)}
+                  title={isPoison ? "Poison" : present ? "Chocolate" : "Removed"}
+                />
+              );
+            })}
+          </div>
+        ))}
+      </div>
 
-			<div style={{ marginTop: 12 }}>
-				<button
-					onClick={playAgain}
-					onMouseDown={onButtonPressStart}
-					onMouseUp={onButtonPressEnd}
-					onMouseLeave={onButtonPressEnd}
-					onTouchStart={onButtonPressStart}
-					onTouchEnd={onButtonPressEnd}
-					style={newGameButtonStyle}
-					aria-pressed={buttonPressed}
-				>
-					New Game
-				</button>
+      <div style={{ marginTop: 12 }}>
+        <button
+          onClick={newGame}
+          onMouseDown={onButtonPressStart}
+          onMouseUp={onButtonPressEnd}
+          onMouseLeave={onButtonPressEnd}
+          onTouchStart={onButtonPressStart}
+          onTouchEnd={onButtonPressEnd}
+          style={newGameButtonStyle}
+          aria-pressed={buttonPressed}
+        >
+          New Game
+        </button>
 
-				{gameOver && (
-					<div style={{ marginTop: 8, color: "#ffddcc", fontWeight: 700 }}>{gameMessage}</div>
-				)}
+        {state.gameOver && (
+          <div style={{ marginTop: 8, color: "#ffddcc", fontWeight: 700 }}>{state.gameMessage}</div>
+        )}
 
-				<div style={{ marginTop: 8, color: "#ccc" }}>
-					Current: Player {currentPlayer} &nbsp;·&nbsp; Board: {rows} rows × {cols} cols
-				</div>
-			</div>
-		</div>
-	);
+        <div style={{ marginTop: 8, color: "#ccc" }}>
+          Current: Player {state.currentPlayer} · Board: {rows} rows × {cols} cols
+        </div>
+      </div>
+    </div>
+  );
 }
