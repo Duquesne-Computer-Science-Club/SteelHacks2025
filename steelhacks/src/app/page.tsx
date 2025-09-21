@@ -1,42 +1,40 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import Image from 'next/image';
+import { useRouter } from "next/navigation";
+import React from "react";
 
 export default function HomePage() {
+  const router = useRouter();
+
   return (
-    <main
+    <div
       style={{
-        minHeight: '100vh',
-        backgroundColor: '#4B2E2E', // deep chocolate background
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'center',
-        alignItems: 'center',
-        padding: '40px',
-        fontFamily: "'Pacifico', cursive", // optional fun font
-        color: '#fff',
-        textAlign: 'center',
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "100vh",
+        backgroundColor: "#1f2937", // dark background
       }}
     >
-      <h1 style={{ fontSize: '3rem', marginBottom: '20px' }}>Welcome to the Chocolate World!</h1>
-      <p style={{ fontSize: '1.2rem', marginBottom: '40px' }}>
-        Dive into deliciousness with our exciting options!
-      </p>
-
-      <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>      
-        
-      </div>
-	  
-	  <div style={{ marginBottom: '20px' }}>
-        <Image
-          src="/images/cwfl.png"
-          alt="Good luck 🎮"
-          width={300}
-          height={200}
-          style={{ borderRadius: '10px' }}
-        />
-      </div>
-    </main>
+      <button
+        onClick={() => router.push("/auth")}
+        style={{
+          padding: "16px 32px",
+          borderRadius: 8,
+          border: "none",
+          backgroundColor: "#4f46e5",
+          color: "#fff",
+          fontSize: "1.25rem",
+          fontWeight: "bold",
+          cursor: "pointer",
+          transition: "transform 0.1s ease, box-shadow 0.1s ease",
+        }}
+        onMouseDown={(e) => (e.currentTarget.style.transform = "scale(0.95)")}
+        onMouseUp={(e) => (e.currentTarget.style.transform = "scale(1)")}
+        onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
+      >
+        Login
+      </button>
+    </div>
   );
 }
