@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Chatroom from "@/components/chatroom";
@@ -91,12 +90,11 @@ export default function GamePage() {
       {/* Left side: Game */}
       <div
         style={{
-          flex: 2,
+          flex: 1,
           display: "flex",
           flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
-          borderRight: "2px solid #444",
           paddingRight: "20px",
         }}
       >
