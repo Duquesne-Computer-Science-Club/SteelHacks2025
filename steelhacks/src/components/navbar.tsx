@@ -12,7 +12,7 @@ const Navbar: React.FC = () => {
     <nav className="w-full bg-gray-800 text-white px-6 py-3 flex justify-between items-center shadow-md">
       {/* Left side - Navigation links */}
       <div className="flex space-x-6">
-        <Link href="/pve" className="hover:text-gray-300">
+        <Link href="/game" className="hover:text-gray-300">
           PVE
         </Link>
         <Link href="/pvp" className="hover:text-gray-300">
