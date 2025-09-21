@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Chatroom from "@/components/chatroom";
-import Chomp from "@/components/chomp";
+import Chomp from "@/components/pve";
 
 type Lobby = {
   id: string;
