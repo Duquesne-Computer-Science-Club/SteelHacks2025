@@ -25,11 +25,27 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      ><Auth0Provider>
-        {children}
-      </Auth0Provider>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <Auth0Provider>
+          {/* Navigation Bar */}
+          <nav
+            style={{
+              backgroundColor: "#A33",
+              padding: "1rem",
+			  justifyContent: "center", // centers the nav items
+              display: "flex",
+              gap: "6rem",
+            }}
+          >
+            <a href="/" style={{ color: "#fff", textDecoration: "none" }}>Home</a>
+            <a href="/game" style={{ color: "#fff", textDecoration: "none" }}>PvE</a>
+            <a href="/auth" style={{ color: "#fff", textDecoration: "none" }}>PvP</a>
+            {/* Add more links here */}
+          </nav>
+          
+          {/* Page Content */}
+          {children}
+        </Auth0Provider>
       </body>
     </html>
   );
