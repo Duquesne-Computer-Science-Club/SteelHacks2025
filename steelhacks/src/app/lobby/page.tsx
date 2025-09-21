@@ -16,42 +16,19 @@ export default function LobbiesPage() {
 
   // ✅ If user is already in a game, redirect them
   useEffect(() => {
-  const lobbyId = localStorage.getItem("lobbyId");
-
-  if (lobbyId) {
-    // ✅ Verify with the server that this lobby still exists
-    fetch(`/api/lobbies/${lobbyId}`)
-      .then((res) => {
-        if (res.ok) {
-          router.push("/game");
-        } else {
-          // Lobby no longer exists, clear stale local storage
-          localStorage.removeItem("lobbyId");
-        }
-      })
-      .catch(() => {
-        localStorage.removeItem("lobbyId");
-      });
-  }
-}, [router]);
+    const stored = localStorage.getItem("activeLobby");
+    if (stored) {
+      router.replace("/game"); // skip lobby list
+    }
+  }, [router]);
 
   // Load lobbies
   useEffect(() => {
-  const fetchLobbies = async () => {
-    try {
-      const res = await fetch("/api/lobbies");
-      const data = await res.json();
-      setLobbies(data.lobbies);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  fetchLobbies(); // initial fetch
-
-  const interval = setInterval(fetchLobbies, 5000); // refetch every 5s
-  return () => clearInterval(interval);
-}, []);
+    fetch("/api/lobbies")
+      .then((res) => res.json())
+      .then((data) => setLobbies(data.lobbies))
+      .catch((err) => console.error("Failed to load lobbies:", err));
+  }, []);
 
   // ✅ Create lobby → save + redirect
   const handleCreateLobby = async () => {
@@ -72,7 +49,7 @@ export default function LobbiesPage() {
       setNewLobbyName("");
 
       localStorage.setItem("activeLobby", JSON.stringify(lobby));
-      router.push("/pvp");
+      router.push("/game");
     } catch (err) {
       console.error(err);
       alert("Error creating lobby");
@@ -95,7 +72,7 @@ export default function LobbiesPage() {
       );
 
       localStorage.setItem("activeLobby", JSON.stringify(lobby));
-      router.push("/pvp");
+      router.push("/game");
     } catch (err) {
       console.error(err);
       alert("Error joining lobby");
@@ -154,8 +131,6 @@ export default function LobbiesPage() {
   ))}
 </ul>
       )}
-	  
-	  
     </div>
   );
 }
