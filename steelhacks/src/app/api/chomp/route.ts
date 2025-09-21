@@ -11,7 +11,7 @@ interface LobbyGames {
   [lobbyId: string]: ChompState;
 }
 
-let games: LobbyGames = {}; // in-memory store per lobby
+const games: LobbyGames = {}; // in-memory store per lobby
 
 // Helper to create a new random board
 const createNewBoard = (): ChompState => {
