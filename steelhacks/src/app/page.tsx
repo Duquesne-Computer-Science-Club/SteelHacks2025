@@ -75,9 +75,6 @@ export default function HomePage() {
             Login for PvP
           </a>
         </Link>
-        <Link href="/" legacyBehavior>
-        <a href="/auth/logout">Logout</a>
-        </Link>
       </div>
     </main>
   );
