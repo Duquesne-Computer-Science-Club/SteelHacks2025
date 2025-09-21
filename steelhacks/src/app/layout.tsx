@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Auth0Provider } from "@auth0/nextjs-auth0";
+import NavBar from '../components/navbar';
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,27 +27,12 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <Auth0Provider>
-          {/* Navigation Bar */}
-          <nav
-            style={{
-              backgroundColor: "#A33",
-              padding: "1rem",
-			  justifyContent: "center", // centers the nav items
-              display: "flex",
-              gap: "6rem",
-            }}
-          >
-            <a href="/" style={{ color: "#fff", textDecoration: "none" }}>Home</a>
-            <a href="/game" style={{ color: "#fff", textDecoration: "none" }}>PvE</a>
-            <a href="/auth" style={{ color: "#fff", textDecoration: "none" }}>PvP</a>
-            {/* Add more links here */}
-          </nav>
-          
-          {/* Page Content */}
-          {children}
-        </Auth0Provider>
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      ><Auth0Provider>
+          <NavBar />
+          <main>{children}</main>
+      </Auth0Provider>
       </body>
     </html>
   );
