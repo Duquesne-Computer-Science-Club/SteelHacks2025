@@ -22,42 +22,7 @@ const Navbar: React.FC = () => {
 
       {/* Right side - Dropdown */}
       <div className="relative">
-        <button
-          onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          className="bg-gray-700 px-3 py-2 rounded-md hover:bg-gray-600"
-        >
-          Menu ▾
-        </button>
-
-        {isDropdownOpen && (
-          <div className="absolute right-0 mt-2 w-40 bg-white text-black rounded-md shadow-lg z-10">
-            {isLoading ? (
-              <div className="px-4 py-2">Loading...</div>
-            ) : user ? (
-              <>
-                <Link
-                  href="/profile"
-                  className="block px-4 py-2 hover:bg-gray-100"
-                >
-                  Profile
-                </Link>
-                <Link
-                  href="/auth/logout"
-                  className="block px-4 py-2 hover:bg-gray-100"
-                >
-                  Logout
-                </Link>
-              </>
-            ) : (
-              <Link
-                href="/auth/login"
-                className="block px-4 py-2 hover:bg-gray-100"
-              >
-                Login
-              </Link>
-            )}
-          </div>
-        )}
+        
       </div>
     </nav>
   );
